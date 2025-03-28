@@ -1,34 +1,97 @@
-# RRT for Path Planning in ROS
+# ROS RRT Path Planner
 
-## The Task
-Implement the Rapidly Exploring Random Trees (RRT) algorithm to plan collision-free paths in a 2D environment.
+## Overview
+This ROS package implements a Rapidly-Exploring Random Tree (RRT) path planning algorithm for 2D navigation. The planner can generate paths through complex environments using a probabilistic tree-based approach.
 
-## How to run it?
-Place it in your catkin workspace `src` folder and build it using:
+## Prerequisites
+- ROS Melodic or Noetic
+- OpenCV
+- catkin build system
+
+## Dependencies
+- nav_msgs
+- geometry_msgs
+- OpenCV
+- roscpp
+
+## Installation
+1. Clone the repository into your catkin workspace:
 ```bash
-catkin build
+cd ~/catkin_ws/src
+git clone <your-repository-url>
+cd ~/catkin_ws
+catkin_make
+source devel/setup.bash
 ```
 
-You can run the launch file given in the `launch` folder using:
+## Usage
+
+### Running the Nodes
+1. Launch the RRT Planner:
 ```bash
-roslaunch rrt_planner rrt_planner.launch
+roslaunch rrt_planner_ros rrt_planner.launch
 ```
 
-This launch file automatically launches three nodes:
-- **RViz** For visualization
-- **Map Server** to load a map from a .png file and publish it as a `nav_msgs::OccupancyGrid` on the `/map` topic
-- **RRT Planner** to receive a map, initial pose, and goal pose, and calculate and publish a collision-free path as a `nav_msgs::Path` msg
+### Specifying Map
+- Place your map image in the `resources/` directory
+- Modify the launch file to use your map:
+```xml
+<node name="map_server" pkg="map_server" type="map_server" 
+      args="$(find rrt_planner_ros)/resources/your_map.png"/>
+```
 
-#### Map Server
-We have provided 5 example map images in the [resources](resources) directory that can be used to test your RRT implementation.
-The map server node is responsible for loading a map file and publishing it as a `nav_msgs::OccupancyGrid` on the `/map` topic.
-To select the map file that should be loaded and published, configure the parameters in [cfg/map.yaml](cfg/map.yaml) file.
+### Setting Start and Goal Positions
+You can set start and goal positions using RViz or via ROS topics:
 
-#### RViz
-When a map has been loaded successfully it should be visible in RViz. The user can then set the initial pose and the goal pose through RViz.
-Press the `2D Pose Estimate` button in RViz to set the initial pose. Press the `2D Nav Goal` button in RViz to set the goal pose.
-Or you can provide the same through the topics `/initialpose` and `/move_base_simple/goal` respectively.
+#### Using RViz
+1. Open RViz
+2. Use "2D Pose Estimate" to set initial pose
+3. Use "2D Nav Goal" to set goal position
 
-## Tuning
-Parameters can be provided to the RRT Planner node using the [cfg/config.yaml](cfg/config.yaml) file.
-Certain RRT parameters can be made configurable by adding them to this file.
+#### Using Command Line
+- Initial Pose:
+```bash
+rostopic pub /initialpose geometry_msgs/PoseWithCovarianceStamped '{pose:{pose:{position:{x: 10, y: 20}}}}'
+```
+
+- Goal Position:
+```bash
+rostopic pub /move_base_simple/goal geometry_msgs/PoseStamped '{pose:{position:{x: 50, y: 60}}}'
+```
+
+### Visualization Options
+Control visualization through launch file or ROS parameters:
+```xml
+<param name="enable_visualization" value="true"/>
+```
+
+## Configuration Parameters
+Edit `cfg/config.yaml` to adjust:
+- `max_iterations`: Maximum RRT tree expansion iterations
+- `step_size`: Distance between tree nodes
+- `goal_threshold`: Proximity to goal for path completion
+- `enable_visualization`: Toggle real-time visualization
+
+## Map Conventions
+- White pixels represent free space
+- Black pixels represent obstacles
+
+## Troubleshooting
+- Ensure map is correctly loaded
+- Check that start and goal positions are within map boundaries
+- Verify ROS master is running
+
+## Performance Tips
+- Increase `max_iterations` for complex environments
+- Adjust `step_size` based on map resolution
+
+## Contributing
+1. Fork the repository
+2. Create your feature branch
+3. Commit changes
+4. Push to the branch
+5. Create a Pull Request
+
+## Acknowledgments
+- Steven M. Lavalle (RRT Algorithm Original Work)
+- Polybee Robotics for the challenge

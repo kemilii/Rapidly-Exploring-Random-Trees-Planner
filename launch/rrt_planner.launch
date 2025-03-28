@@ -1,10 +1,22 @@
 <launch>
-    <arg name="rviz_config" default="$(find rrt_planner)/cfg/rrt_planner.rviz"/>
-    <arg name="map_file" default="$(find rrt_planner)/cfg/map.yaml"/>
+    <!-- Configuration arguments -->
+    <arg name="rviz_config" default="$(find rrt_planner_ros)/cfg/rrt_planner.rviz"/>
+    <arg name="map_file" default="$(find rrt_planner_ros)/resources/map1.png"/>
+    <arg name="enable_visualization" default="true"/>
 
-    <rosparam command="load" file="$(find rrt_planner)/cfg/config.yaml"/>
+    <!-- Load parameters -->
+    <rosparam command="load" file="$(find rrt_planner_ros)/cfg/config.yaml"/>
 
-    <node type="rviz" name="rviz" pkg="rviz" args="-d $(arg rviz_config)"/>
-    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
-    <node type="rrt_planner_node" name="rrt_planner" pkg="rrt_planner" output="screen"/>
+    <!-- Map server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
+        <param name="frame_id" value="map"/>
+    </node>
+
+    <!-- RRT Planner Node -->
+    <node name="rrt_planner" pkg="rrt_planner_ros" type="rrt_planner_node" output="screen">
+        <param name="enable_visualization" value="$(arg enable_visualization)"/>
+    </node>
+
+    <!-- RViz visualization -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" if="$(arg enable_visualization)"/>
 </launch>

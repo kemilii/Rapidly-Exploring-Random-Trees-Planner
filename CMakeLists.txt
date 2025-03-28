@@ -1,51 +1,57 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(rrt_planner)
+cmake_minimum_required(VERSION 3.0.2)
+project(rrt_planner_ros)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  nav_msgs
-  roscpp
-)
-
-find_package(Boost 1.65 REQUIRED)
+        roscpp
+        rospy
+        std_msgs
+        nav_msgs
+        geometry_msgs
+        cv_bridge
+        image_transport
+        )
 
 find_package(OpenCV REQUIRED)
 
-include_directories(${OpenCV_INCLUDE_DIRS})
-
 catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES rrt_planner
-  CATKIN_DEPENDS
-    nav_msgs
-    geometry_msgs
-    roscpp
+        INCLUDE_DIRS include
+        LIBRARIES rrt_planner
+        CATKIN_DEPENDS roscpp rospy std_msgs nav_msgs geometry_msgs cv_bridge image_transport
 )
 
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+        include
+        ${catkin_INCLUDE_DIRS}
+        ${OpenCV_INCLUDE_DIRS}
 )
 
-add_library(${PROJECT_NAME}
-  src/rrt_planner.cpp
-)
+add_library(rrt_planner
+        src/rrt_planner.cpp
+        )
 
-add_executable(${PROJECT_NAME}_node src/rrt_planner_node.cpp)
+add_executable(rrt_planner_node
+        src/rrt_planner_node.cpp
+        )
 
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBS}
-)
+target_link_libraries(rrt_planner
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+        )
 
-target_link_libraries(${PROJECT_NAME}_node
-  ${catkin_LIBRARIES}
-  ${PROJECT_NAME}
-)
+target_link_libraries(rrt_planner_node
+        rrt_planner
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+        )
 
-install(TARGETS ${PROJECT_NAME}_node
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+add_executable(map_server_node
+        src/map_server_node.cpp
+        src/map_server_node.cpp)
+
+target_link_libraries(map_server_node
+        ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+        )
